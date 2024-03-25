@@ -32,6 +32,10 @@ bool extensionIsNotCorrect(char * fileName, int size);
 
 int main(int argc, char **argv) {
 
+	// What next?
+	// Probably lex the program, idk (how to lex, bro)
+	//
+
 	FILE *fptr = fopen(argv[1], "r");
 	char readBuffer[1024]; // Buffer to store the read file
 
