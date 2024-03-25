@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define MAX_SIZE 100
 const int BUFF = 100;
+
+// note from the author: remember to free() any space after using push or initStackNode :]
 
 typedef struct {
 	int value;
@@ -25,20 +28,53 @@ int push (Stack * stack, StackNode * value);
 StackNode * pop (Stack * stack);
 StackNode * peek (Stack * stack);
 
-int main(void) {
+bool extensionIsNotCorrect(char * fileName, int size);
+
+int main(int argc, char **argv) {
+
+	FILE *fptr = fopen(argv[1], "r");
+	char readBuffer[1024]; // Buffer to store the read file
+
+	if (fptr == NULL || extensionIsNotCorrect(argv[1], strlen(argv[1]))) {
+		fprintf(stderr, "[-] Unable to open the provided file!\n");
+		exit(1);
+	}
+
+	printf("[+] file to parse is: %s\n\n", argv[1]);
 	
-	// test print
-	printf("Yup, we runninga!\n");
+	while(fgets(readBuffer, sizeof(readBuffer), fptr) != NULL) {
+		printf("%s", readBuffer);
+	}
 
-	StackNode * test = initStackNode(5, "abc");
 
-	printf("The value of the variable is: %d\n", test->value);
-	printf("The variable name is: %s\n", test->variable_name);
+	// printing the file for no reason at all
+
+	// StackNode * test = initStackNode(5, "abc");
+
+	// printf("The value of the variable is: %d\n", test->value);
+	// printf("The variable name is: %s\n", test->variable_name);
 
 	// deallocate, plaese xd
-	free(test->variable_name);
-	free(test);
+	// free(test->variable_name);
+	// free(test);
+
+	fclose(fptr);
+
 	return 0;
+}
+
+// ==== Main functions ====
+bool extensionIsNotCorrect(char * fileName, int size) {
+	char check[] = { 't', 'r', 'g', 'x' };
+
+	int i;
+	int j;
+
+	for (i = 0, j = size - 4; j < size; i++, j++)
+		if (check[i] != fileName[j - 1])
+				return false;
+
+	return true;
 }
 
 // ==== Stack Node methods ====
