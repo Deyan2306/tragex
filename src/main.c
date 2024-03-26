@@ -89,7 +89,7 @@ char * getTokenStringRepresentation(Token * token) {
         exit(1);
     }
 
-    sprintf(result, "(%s : %d)", token->value, token->type);
+    sprintf(result, "(\"%s\" : %d)", token->value, token->type);
 
     return result;
 }
@@ -116,7 +116,7 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
     char currentToken[MAX_TOKEN_SIZE];
     int tokenIndex = 0;
 
-	// NOTE: It works, but has to check only for addx. In this example there is addx:17
+	// TODO: Numbers lexing
     while(fgets(readBuffer, sizeof(readBuffer), fptr) != NULL) {
         for (int i = 0; readBuffer[i] != '\0'; i++) {
             char currentChar = readBuffer[i];
@@ -129,10 +129,9 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
                     currentToken[tokenIndex++] = currentChar;
                 }
             } else if (state == 1) { // Inside a token
-                if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r') {
+               	if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r' || currentChar == ':' || currentChar == ';') {
                     // End of token
                     currentToken[tokenIndex] = '\0'; // Terminate the string
-					printf("Current Token: %s\n", currentToken);
                     if (strcmp(currentToken, "addx") == 0) {
                         Token * addxToken = initToken(ADDX, currentToken);
                         tokenHolder[count] = addxToken;
@@ -142,6 +141,16 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
                 } else {
                     currentToken[tokenIndex++] = currentChar;
                 }
+
+				if (currentChar == ':') {
+					Token * colonToken = initToken(COLON, ":");
+					tokenHolder[count] = colonToken;
+					count++;
+				} else if (currentChar == ';') {
+					Token * semiColonToken = initToken(SEMI_COLON, ";");
+					tokenHolder[count] = semiColonToken;
+					count++;
+				}
             }
         }
     }
