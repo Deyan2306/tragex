@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #define MAX_SIZE 100
 #define MAX_TOKEN_SIZE 1024
@@ -59,6 +60,7 @@ char * getTokenStringRepresentation(Token * token);
 Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens);
 
 bool extensionIsNotCorrect(char * fileName, int size);
+char * trim(char * str);
 
 int main(int argc, char **argv) {
 
@@ -78,6 +80,24 @@ int main(int argc, char **argv) {
 
     free(tokens);
     return 0;
+}
+
+char * trim(char * str) {
+	while (isspace((unsigned char)*str)) {
+		str++;
+	}
+
+	if (*str == '\0')
+		return str;
+
+	char *end = str + strlen(str) - 1;
+	while (end > str && isspace((unsigned char)*end)) {
+		end--;
+	}
+
+	*(end + 1) = '\0';
+
+	return str;
 }
 
 char * getTokenStringRepresentation(Token * token) {
@@ -131,54 +151,60 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
             if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r' || currentChar == '\t' || currentChar == ':' || currentChar == ';') {
                 // End of token
                 currentToken[tokenIndex] = '\0'; // Terminate the string
+
+				char * trimmedToken = trim(currentToken);
                 if (strcmp(currentToken, "addx") == 0) {
-                    Token * addxToken = initToken(ADDX, currentToken);
+                    Token * addxToken = initToken(ADDX, trimmedToken);
                     tokenHolder[count++] = addxToken;
                 } else if (strcmp(currentToken, "rmx") == 0) {
-					Token * rmxToken = initToken(RMX, currentToken);
+                    Token * rmxToken = initToken(RMX, trimmedToken);
                     tokenHolder[count++] = rmxToken;
-				} else if (strcmp(currentToken, "showx") == 0) {
-					Token * showxToken = initToken(SHOWX, currentToken);
-					tokenHolder[count++] = showxToken;
-				} else if (strcmp(currentToken, "execf") == 0) {
-					Token * execfToken = initToken(EXECF, currentToken);
-					tokenHolder[count++] = execfToken;
-				} else if (strcmp(currentToken, "ma") == 0) {
-					Token * maToken = initToken(MA, currentToken);
-					tokenHolder[count++] = maToken;
+                } else if (strcmp(currentToken, "showx") == 0) {
+                    Token * showxToken = initToken(SHOWX, trimmedToken);
+                    tokenHolder[count++] = showxToken;
+                } else if (strcmp(currentToken, "execf") == 0) {
+                    Token * execfToken = initToken(EXECF, trimmedToken);
+                    tokenHolder[count++] = execfToken;
+                } else if (strcmp(currentToken, "ma") == 0) {
+                    Token * maToken = initToken(MA, trimmedToken);
+                    tokenHolder[count++] = maToken;
+                } else {
+					Token * variableToken = initToken(VARIABLE, trimmedToken);
+					tokenHolder[count++] = variableToken;
 				}
                 state = 0;
             } else {
                 currentToken[tokenIndex++] = currentChar;
             }
 
-			if (currentChar == ':') {
-				Token * colonToken = initToken(COLON, ":");
-				tokenHolder[count++] = colonToken;
-			} else if (currentChar == ';') {
-				Token * semiColonToken = initToken(SEMI_COLON, ";");
-				tokenHolder[count++] = semiColonToken;
-			} else if (currentChar == '[') { // Braces
-				Token * openingSquareBracket = initToken(SQ_BRACES, "[");
-				tokenHolder[count++] = openingSquareBracket;
-			} else if (currentChar == ']') {
-				Token * closingSquareBracket = initToken(SQ_BRACES, "]");
-				tokenHolder[count++] = closingSquareBracket;
-			} else if (currentChar == '<') {
-				// BUG: It is never finding the < character
-				Token * openingTriangleBracket = initToken(TR_BRACES, "<");
-				tokenHolder[count++] = openingTriangleBracket;
-			} else if (currentChar == '>') {
-				Token * closingTriangleBracket = initToken(TR_BRACES, ">");
-				tokenHolder[count++] = closingTriangleBracket;
-			} else if (currentChar == '(') {
-				Token * openingRoundBracket = initToken(RD_BRACES, "(");
-				tokenHolder[count++] = openingRoundBracket;
-			} else if (currentChar == ')') {
-				Token * closingRoundBracket = initToken(RD_BRACES, ")");
-				tokenHolder[count++] = closingRoundBracket;
-			}
+            // Add conditions for '<' and '>'
+            if (currentChar == ':') {
+                Token * colonToken = initToken(COLON, ":");
+                tokenHolder[count++] = colonToken;
+            } else if (currentChar == ';') {
+                Token * semiColonToken = initToken(SEMI_COLON, ";");
+                tokenHolder[count++] = semiColonToken;
+            } else if (currentChar == '[') { // Braces
+                Token * openingSquareBracket = initToken(SQ_BRACES, "[");
+                tokenHolder[count++] = openingSquareBracket;
+            } else if (currentChar == ']') {
+                Token * closingSquareBracket = initToken(SQ_BRACES, "]");
+                tokenHolder[count++] = closingSquareBracket;
+            } else if (currentChar == '<') {
+                Token * openingTriangleBracket = initToken(TR_BRACES, "<");
+                tokenHolder[count++] = openingTriangleBracket;
+            } else if (currentChar == '>') {
+                Token * closingTriangleBracket = initToken(TR_BRACES, ">");
+                tokenHolder[count++] = closingTriangleBracket;
+            } else if (currentChar == '(') {
+                Token * openingRoundBracket = initToken(RD_BRACES, "(");
+                tokenHolder[count++] = openingRoundBracket;
+            } else if (currentChar == ')') {
+                Token * closingRoundBracket = initToken(RD_BRACES, ")");
+                tokenHolder[count++] = closingRoundBracket;
+            }
         }
+
     }
 
     fclose(fptr);
