@@ -116,7 +116,7 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
     char currentToken[MAX_TOKEN_SIZE];
     int tokenIndex = 0;
 
-	// TODO: Numbers lexing
+	// TODO: Check if the current token is a number
     while(fgets(readBuffer, sizeof(readBuffer), fptr) != NULL) {
         for (int i = 0; readBuffer[i] != '\0'; i++) {
             char currentChar = readBuffer[i];
@@ -144,12 +144,29 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
 
 				if (currentChar == ':') {
 					Token * colonToken = initToken(COLON, ":");
-					tokenHolder[count] = colonToken;
-					count++;
+					tokenHolder[count++] = colonToken;
 				} else if (currentChar == ';') {
 					Token * semiColonToken = initToken(SEMI_COLON, ";");
-					tokenHolder[count] = semiColonToken;
-					count++;
+					tokenHolder[count++] = semiColonToken;
+				} else if (currentChar == '[') { // Braces
+					Token * openingSquareBracket = initToken(SQ_BRACES, "[");
+					tokenHolder[count++] = openingSquareBracket;
+				} else if (currentChar == ']') {
+					Token * closingSquareBracket = initToken(SQ_BRACES, "]");
+					tokenHolder[count++] = closingSquareBracket;
+				} else if (currentChar == '<') {
+					// BUG: It is never finding the < character
+					Token * openingTriangleBracket = initToken(TR_BRACES, "<");
+					tokenHolder[count++] = openingTriangleBracket;
+				} else if (currentChar == '>') {
+					Token * closingTriangleBracket = initToken(TR_BRACES, ">");
+					tokenHolder[count++] = closingTriangleBracket;
+				} else if (currentChar == '(') {
+					Token * openingRoundBracket = initToken(RD_BRACES, "(");
+					tokenHolder[count++] = openingRoundBracket;
+				} else if (currentChar == ')') {
+					Token * closingRoundBracket = initToken(RD_BRACES, ")");
+					tokenHolder[count++] = closingRoundBracket;
 				}
             }
         }
