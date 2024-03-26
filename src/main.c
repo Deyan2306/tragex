@@ -115,60 +115,60 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
     int state = 0; // 0 for outside of token; 1 for inside of token
     char currentToken[MAX_TOKEN_SIZE];
     int tokenIndex = 0;
+	char currentChar;
 
 	// TODO: Check if the current token is a number
-    while(fgets(readBuffer, sizeof(readBuffer), fptr) != NULL) {
-        for (int i = 0; readBuffer[i] != '\0'; i++) {
-            char currentChar = readBuffer[i];
-            if (state == 0) { // Outside token
-                if (currentChar == ' ') {
-                    continue; // Skip space
-                } else {
-                    state = 1; // New token starts
-                    tokenIndex = 0;
-                    currentToken[tokenIndex++] = currentChar;
-                }
-            } else if (state == 1) { // Inside a token
-               	if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r' || currentChar == ':' || currentChar == ';') {
-                    // End of token
-                    currentToken[tokenIndex] = '\0'; // Terminate the string
-                    if (strcmp(currentToken, "addx") == 0) {
-                        Token * addxToken = initToken(ADDX, currentToken);
-                        tokenHolder[count] = addxToken;
-                        count++;
-                    }
-                    state = 0;
-                } else {
-                    currentToken[tokenIndex++] = currentChar;
-                }
-
-				if (currentChar == ':') {
-					Token * colonToken = initToken(COLON, ":");
-					tokenHolder[count++] = colonToken;
-				} else if (currentChar == ';') {
-					Token * semiColonToken = initToken(SEMI_COLON, ";");
-					tokenHolder[count++] = semiColonToken;
-				} else if (currentChar == '[') { // Braces
-					Token * openingSquareBracket = initToken(SQ_BRACES, "[");
-					tokenHolder[count++] = openingSquareBracket;
-				} else if (currentChar == ']') {
-					Token * closingSquareBracket = initToken(SQ_BRACES, "]");
-					tokenHolder[count++] = closingSquareBracket;
-				} else if (currentChar == '<') {
-					// BUG: It is never finding the < character
-					Token * openingTriangleBracket = initToken(TR_BRACES, "<");
-					tokenHolder[count++] = openingTriangleBracket;
-				} else if (currentChar == '>') {
-					Token * closingTriangleBracket = initToken(TR_BRACES, ">");
-					tokenHolder[count++] = closingTriangleBracket;
-				} else if (currentChar == '(') {
-					Token * openingRoundBracket = initToken(RD_BRACES, "(");
-					tokenHolder[count++] = openingRoundBracket;
-				} else if (currentChar == ')') {
-					Token * closingRoundBracket = initToken(RD_BRACES, ")");
-					tokenHolder[count++] = closingRoundBracket;
-				}
+    while((currentChar = fgetc(fptr)) != EOF) {
+        if (state == 0) { // Outside token
+            if (currentChar == ' ') {
+                continue; // Skip space
+            } else {
+                state = 1; // New token starts
+                tokenIndex = 0;
+                currentToken[tokenIndex++] = currentChar;
             }
+        } else if (state == 1) { // Inside a token
+            if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r' || currentChar == ':' || currentChar == ';') {
+                // End of token
+                currentToken[tokenIndex] = '\0'; // Terminate the string
+                if (strcmp(currentToken, "addx") == 0) {
+                    Token * addxToken = initToken(ADDX, currentToken);
+                    tokenHolder[count++] = addxToken;
+                } else if (strcmp(currentToken, "rmx") == 0) {
+					Token * rmxToken = initToken(RMX, currentToken);
+                    tokenHolder[count++] = rmxToken;
+				}
+                state = 0;
+            } else {
+                currentToken[tokenIndex++] = currentChar;
+            }
+
+			if (currentChar == ':') {
+				Token * colonToken = initToken(COLON, ":");
+				tokenHolder[count++] = colonToken;
+			} else if (currentChar == ';') {
+				Token * semiColonToken = initToken(SEMI_COLON, ";");
+				tokenHolder[count++] = semiColonToken;
+			} else if (currentChar == '[') { // Braces
+				Token * openingSquareBracket = initToken(SQ_BRACES, "[");
+				tokenHolder[count++] = openingSquareBracket;
+			} else if (currentChar == ']') {
+				Token * closingSquareBracket = initToken(SQ_BRACES, "]");
+				tokenHolder[count++] = closingSquareBracket;
+			} else if (currentChar == '<') {
+				// BUG: It is never finding the < character
+				Token * openingTriangleBracket = initToken(TR_BRACES, "<");
+				tokenHolder[count++] = openingTriangleBracket;
+			} else if (currentChar == '>') {
+				Token * closingTriangleBracket = initToken(TR_BRACES, ">");
+				tokenHolder[count++] = closingTriangleBracket;
+			} else if (currentChar == '(') {
+				Token * openingRoundBracket = initToken(RD_BRACES, "(");
+				tokenHolder[count++] = openingRoundBracket;
+			} else if (currentChar == ')') {
+				Token * closingRoundBracket = initToken(RD_BRACES, ")");
+				tokenHolder[count++] = closingRoundBracket;
+			}
         }
     }
 
