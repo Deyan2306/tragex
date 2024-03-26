@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #define MAX_SIZE 100
+#define MAX_TOKEN_SIZE 1024
 const int BUFF = 100;
 
 // note from the author: remember to free() any space after using push or initStackNode :]
@@ -28,43 +29,121 @@ int push (Stack * stack, StackNode * value);
 StackNode * pop (Stack * stack);
 StackNode * peek (Stack * stack);
 
+enum TokenType {
+	ADDX = 1, // adds a variable
+	RMX = 2, // removes a variable
+	SHOWX = 3, // console logging
+	EXECF = 4, // function declaration
+	MA = 5, // main function declaration
+	VARIABLE = 6, // Variable name
+	VALUE = 7, // Value of a variable
+	SPLIT = 8, // --
+	COLON = 9, // :
+	SQ_BRACES = 10, // [ ]
+	TR_BRACES = 11, // < >
+	RD_BRACES = 12, // ( )
+	SEMI_COLON = 13, // ;
+	SUMX = 14, // Sum of two numbers
+	SUBX = 15 // Subtraction of two numbers
+};
+
+// Stores the tokens of the program
+typedef struct {
+	int type;
+	char * value[];
+} Token;
+
+char * getTokenStringRepresentation(Token * token);
+Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens);
+
 bool extensionIsNotCorrect(char * fileName, int size);
 
 int main(int argc, char **argv) {
 
-	// What next?
-	// Probably lex the program, idk (how to lex, bro)
-	//
+	if (argc != 2) {
+		fprintf(stderr, "Usage: tragex <filename.trgx> -[options]\n");
+	}
 
-	FILE *fptr = fopen(argv[1], "r");
-	char readBuffer[1024]; // Buffer to store the read file
+	int numberOfTokens = 0;
+	Token * tokens = tokenizeProgram(argv[1], strlen(argv[1]), &numberOfTokens);
 
-	if (fptr == NULL || extensionIsNotCorrect(argv[1], strlen(argv[1]))) {
+	for (int i = 0; i < numberOfTokens; i++)
+		printf("%s\n", getTokenStringRepresentation(&tokens[i]));
+
+	for (int i = 0; i < numberOfTokens; i++)
+		free(tokens[i].value);
+
+	free(tokens);
+	return 0;
+}
+
+char * getTokenStringRepresentation(Token * token) {
+	char * result = malloc(sizeof(char *));
+
+	if (result == NULL) {
+		fprintf(stderr, "[-] Failed to allocate memory for the tokenization!\n");
+	}
+
+	sprintf(result, "(%s : %d)", token->value, token->type);
+
+	return result;
+}
+
+Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
+	
+	FILE *fptr = fopen(fileLocation, "r");
+	char readBuffer[1024];
+	int count = 0;
+
+	Token * tokenHolder = malloc(sizeof(Token) * MAX_TOKEN_SIZE); // Do not forget to deallocate
+	
+	if (tokenHolder == NULL) {
+		fprintf(stderr, "[-] Unable to allocate memory for the Token Holder!\n");
+		exit(1);
+	}
+
+	if (fptr == NULL || extensionIsNotCorrect(fileLocation, size)) {
 		fprintf(stderr, "[-] Unable to open the provided file!\n");
 		exit(1);
 	}
 
-	printf("[+] file to parse is: %s\n\n", argv[1]);
-	
+	int state = 0; // 0 for outside of token; 1 for inside of token
+	char currentToken[MAX_TOKEN_SIZE];
+	int tokenIndex = 0;
+
 	while(fgets(readBuffer, sizeof(readBuffer), fptr) != NULL) {
-		printf("%s", readBuffer);
+		for (int i = 0; readBuffer[i] != '\0'; i++) {
+			char currentChar = readBuffer[i];
+			if (state == 0) { // Outside token
+				if (currentChar == ' ') {
+					continue; // Skip space
+				} else {
+					state = 1; // New token starts
+					tokenIndex = 0;
+					currentToken[tokenIndex++] = currentChar;
+				}
+			} else if (state == 1) { // Inside a token
+				if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r') {
+					// End of token
+					currentToken[tokenIndex] = '\0'; // Terminate the string
+					if (strcmp(currentToken, "addx") == 0) {
+						tokenHolder[count].type = ADDX;
+						tokenHolder[count].value = malloc(strlen(currentToken) + 1);
+						strcpy(tokenHolder[count].value, currentToken);
+						count++;
+					}
+					state = 0;
+				} else {
+					currentToken[tokenIndex++] = currentChar;
+				}
+			}
+		}
 	}
 
-
-	// printing the file for no reason at all
-
-	// StackNode * test = initStackNode(5, "abc");
-
-	// printf("The value of the variable is: %d\n", test->value);
-	// printf("The variable name is: %s\n", test->variable_name);
-
-	// deallocate, plaese xd
-	// free(test->variable_name);
-	// free(test);
-
 	fclose(fptr);
+	*numberOfTokens = count;
 
-	return 0;
+	return tokenHolder;
 }
 
 // ==== Main functions ====
