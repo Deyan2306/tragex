@@ -12,9 +12,9 @@ rmx: sum_of_two_variables;
 showx: sumx: first -- second;
 
 execf: remove_three[some_num] <
-	showx: subx: some_num -- 3;
+    showx: subx: some_num -- 3;
 >
 
 ma (Test) <
-	showx: remove_three[8];
+    showx: remove_three[8];
 >

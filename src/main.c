@@ -128,7 +128,7 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
                 currentToken[tokenIndex++] = currentChar;
             }
         } else if (state == 1) { // Inside a token
-            if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r' || currentChar == ':' || currentChar == ';') {
+            if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r' || currentChar == '\t' || currentChar == ':' || currentChar == ';') {
                 // End of token
                 currentToken[tokenIndex] = '\0'; // Terminate the string
                 if (strcmp(currentToken, "addx") == 0) {
@@ -137,6 +137,15 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
                 } else if (strcmp(currentToken, "rmx") == 0) {
 					Token * rmxToken = initToken(RMX, currentToken);
                     tokenHolder[count++] = rmxToken;
+				} else if (strcmp(currentToken, "showx") == 0) {
+					Token * showxToken = initToken(SHOWX, currentToken);
+					tokenHolder[count++] = showxToken;
+				} else if (strcmp(currentToken, "execf") == 0) {
+					Token * execfToken = initToken(EXECF, currentToken);
+					tokenHolder[count++] = execfToken;
+				} else if (strcmp(currentToken, "ma") == 0) {
+					Token * maToken = initToken(MA, currentToken);
+					tokenHolder[count++] = maToken;
 				}
                 state = 0;
             } else {
