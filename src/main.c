@@ -7,51 +7,53 @@
 #define MAX_TOKEN_SIZE 1024
 const int BUFF = 100;
 
-// note from the author: remember to free() any space after using push or initStackNode :]
+// Note from the author: remember to free() any space after using push or initStackNode :]
 
 typedef struct {
-	int value;
-	char * variable_name;
+    int value;
+    char * variable_name;
 } StackNode;
 
-StackNode * initStackNode(int _value, char * _varuable_name);
+StackNode * initStackNode(int _value, char * _variable_name);
 StackNode * RIC();
 
 typedef struct {
-	StackNode * operations[MAX_SIZE];
-	int top;
+    StackNode * operations[MAX_SIZE];
+    int top;
 } Stack;
 
-void initialize (Stack * stack);
-int isFull (Stack * stack);
-int isEmpty (Stack * stack);
-int push (Stack * stack, StackNode * value);
-StackNode * pop (Stack * stack);
-StackNode * peek (Stack * stack);
+void initialize(Stack * stack);
+int isFull(Stack * stack);
+int isEmpty(Stack * stack);
+int push(Stack * stack, StackNode * value);
+StackNode * pop(Stack * stack);
+StackNode * peek(Stack * stack);
 
 enum TokenType {
-	ADDX = 1, // adds a variable
-	RMX = 2, // removes a variable
-	SHOWX = 3, // console logging
-	EXECF = 4, // function declaration
-	MA = 5, // main function declaration
-	VARIABLE = 6, // Variable name
-	VALUE = 7, // Value of a variable
-	SPLIT = 8, // --
-	COLON = 9, // :
-	SQ_BRACES = 10, // [ ]
-	TR_BRACES = 11, // < >
-	RD_BRACES = 12, // ( )
-	SEMI_COLON = 13, // ;
-	SUMX = 14, // Sum of two numbers
-	SUBX = 15 // Subtraction of two numbers
+    ADDX = 1, // adds a variable
+    RMX = 2, // removes a variable
+    SHOWX = 3, // console logging
+    EXECF = 4, // function declaration
+    MA = 5, // main function declaration
+    VARIABLE = 6, // Variable name
+    VALUE = 7, // Value of a variable
+    SPLIT = 8, // --
+    COLON = 9, // :
+    SQ_BRACES = 10, // [ ]
+    TR_BRACES = 11, // < >
+    RD_BRACES = 12, // ( )
+    SEMI_COLON = 13, // ;
+    SUMX = 14, // Sum of two numbers
+    SUBX = 15 // Subtraction of two numbers
 };
 
 // Stores the tokens of the program
 typedef struct {
-	int type;
-	char * value[];
+    int type;
+    char * value;
 } Token;
+
+Token * initToken(int _type, char * _value);
 
 char * getTokenStringRepresentation(Token * token);
 Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens);
@@ -60,90 +62,124 @@ bool extensionIsNotCorrect(char * fileName, int size);
 
 int main(int argc, char **argv) {
 
-	if (argc != 2) {
-		fprintf(stderr, "Usage: tragex <filename.trgx> -[options]\n");
-	}
+    if (argc != 2) {
+        fprintf(stderr, "Usage: tragex <filename.trgx> -[options]\n");
+        return 1;
+    }
 
-	int numberOfTokens = 0;
-	Token * tokens = tokenizeProgram(argv[1], strlen(argv[1]), &numberOfTokens);
+    int numberOfTokens = 0;
+    Token * tokens = tokenizeProgram(argv[1], strlen(argv[1]), &numberOfTokens);
 
-	for (int i = 0; i < numberOfTokens; i++)
-		printf("%s\n", getTokenStringRepresentation(&tokens[i]));
+    for (int i = 0; i < numberOfTokens; i++)
+        printf("%s\n", getTokenStringRepresentation(&tokens[i]));
 
-	for (int i = 0; i < numberOfTokens; i++)
-		free(tokens[i].value);
+    for (int i = 0; i < numberOfTokens; i++)
+        free(tokens[i].value);
 
-	free(tokens);
-	return 0;
+    free(tokens);
+    return 0;
 }
 
 char * getTokenStringRepresentation(Token * token) {
-	char * result = malloc(sizeof(char *));
 
-	if (result == NULL) {
-		fprintf(stderr, "[-] Failed to allocate memory for the tokenization!\n");
-	}
+    char * result = malloc(sizeof(char) * (strlen(token->value) + 20)); // Adding extra for type
 
-	sprintf(result, "(%s : %d)", token->value, token->type);
+    if (result == NULL) {
+        fprintf(stderr, "[-] Failed to allocate memory for the tokenization!\n");
+        exit(1);
+    }
 
-	return result;
+    sprintf(result, "(%s : %d)", token->value, token->type);
+
+    return result;
 }
 
 Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
-	
-	FILE *fptr = fopen(fileLocation, "r");
-	char readBuffer[1024];
-	int count = 0;
 
-	Token * tokenHolder = malloc(sizeof(Token) * MAX_TOKEN_SIZE); // Do not forget to deallocate
-	
-	if (tokenHolder == NULL) {
-		fprintf(stderr, "[-] Unable to allocate memory for the Token Holder!\n");
-		exit(1);
-	}
+    FILE *fptr = fopen(fileLocation, "r");
+    char readBuffer[1024];
+    int count = 0;
 
-	if (fptr == NULL || extensionIsNotCorrect(fileLocation, size)) {
-		fprintf(stderr, "[-] Unable to open the provided file!\n");
-		exit(1);
-	}
+    Token ** tokenHolder = malloc(sizeof(Token *) * MAX_TOKEN_SIZE); // Do not forget to deallocate
+    
+    if (tokenHolder == NULL) {
+        fprintf(stderr, "[-] Unable to allocate memory for the Token Holder!\n");
+        exit(1);
+    }
 
-	int state = 0; // 0 for outside of token; 1 for inside of token
-	char currentToken[MAX_TOKEN_SIZE];
-	int tokenIndex = 0;
+    if (fptr == NULL || extensionIsNotCorrect(fileLocation, size)) {
+        fprintf(stderr, "[-] Unable to open the provided file!\n");
+        exit(1);
+    }
 
-	while(fgets(readBuffer, sizeof(readBuffer), fptr) != NULL) {
-		for (int i = 0; readBuffer[i] != '\0'; i++) {
-			char currentChar = readBuffer[i];
-			if (state == 0) { // Outside token
-				if (currentChar == ' ') {
-					continue; // Skip space
-				} else {
-					state = 1; // New token starts
-					tokenIndex = 0;
-					currentToken[tokenIndex++] = currentChar;
-				}
-			} else if (state == 1) { // Inside a token
-				if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r') {
-					// End of token
-					currentToken[tokenIndex] = '\0'; // Terminate the string
-					if (strcmp(currentToken, "addx") == 0) {
-						tokenHolder[count].type = ADDX;
-						tokenHolder[count].value = malloc(strlen(currentToken) + 1);
-						strcpy(tokenHolder[count].value, currentToken);
-						count++;
-					}
-					state = 0;
-				} else {
-					currentToken[tokenIndex++] = currentChar;
-				}
-			}
-		}
-	}
+    int state = 0; // 0 for outside of token; 1 for inside of token
+    char currentToken[MAX_TOKEN_SIZE];
+    int tokenIndex = 0;
 
-	fclose(fptr);
-	*numberOfTokens = count;
+	// NOTE: It works, but has to check only for addx. In this example there is addx:17
+    while(fgets(readBuffer, sizeof(readBuffer), fptr) != NULL) {
+        for (int i = 0; readBuffer[i] != '\0'; i++) {
+            char currentChar = readBuffer[i];
+            if (state == 0) { // Outside token
+                if (currentChar == ' ') {
+                    continue; // Skip space
+                } else {
+                    state = 1; // New token starts
+                    tokenIndex = 0;
+                    currentToken[tokenIndex++] = currentChar;
+                }
+            } else if (state == 1) { // Inside a token
+                if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r') {
+                    // End of token
+                    currentToken[tokenIndex] = '\0'; // Terminate the string
+					printf("Current Token: %s\n", currentToken);
+                    if (strcmp(currentToken, "addx") == 0) {
+                        Token * addxToken = initToken(ADDX, currentToken);
+                        tokenHolder[count] = addxToken;
+                        count++;
+                    }
+                    state = 0;
+                } else {
+                    currentToken[tokenIndex++] = currentChar;
+                }
+            }
+        }
+    }
 
-	return tokenHolder;
+    fclose(fptr);
+    *numberOfTokens = count;
+
+    // Create a new array of the exact size needed
+    Token * finalTokens = malloc(sizeof(Token) * count);
+    for (int i = 0; i < count; i++) {
+        finalTokens[i] = *tokenHolder[i];
+    }
+
+    free(tokenHolder); // Free the original array
+
+    return finalTokens;
+}
+
+Token * initToken(int _type, char * _value) {
+
+    Token * createdToken = malloc(sizeof(Token));
+    
+    if (createdToken == NULL) {
+        fprintf(stderr, "[-] The token was not initialized successfully!\n");
+        exit(1);
+    }
+
+    createdToken->type = _type;
+    createdToken->value = malloc(strlen(_value) + 1);
+
+    if (createdToken->value == NULL) {
+        fprintf(stderr, "[-] The token's value was not initialized successfully.");
+        exit(1);
+    }
+
+    strcpy(createdToken->value, _value);
+
+    return createdToken;
 }
 
 // ==== Main functions ====
