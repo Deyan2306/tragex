@@ -107,6 +107,8 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
     int tokenIndex = 0;
 	char currentChar;
 
+    Token * currentTokenPtr = NULL;
+
     while((currentChar = fgetc(fptr)) != EOF) {
         if (state == 0) { // Outside token
             if (currentChar == ' ') {
@@ -131,32 +133,27 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
 				char * trimmedToken = trim(currentToken);
 
                 if (strcmp(currentToken, "addx") == 0) {
-                    Token * addxToken = initToken(ADDX, trimmedToken);
-                    tokenHolder[count++] = addxToken;
+                    currentTokenPtr = initToken(ADDX, trimmedToken);
                 } else if (strcmp(currentToken, "rmx") == 0) {
-                    Token * rmxToken = initToken(RMX, trimmedToken);
-                    tokenHolder[count++] = rmxToken;
+                    currentTokenPtr = initToken(RMX, trimmedToken);
                 } else if (strcmp(currentToken, "showx") == 0) {
-                    Token * showxToken = initToken(SHOWX, trimmedToken);
-                    tokenHolder[count++] = showxToken;
+                    currentTokenPtr = initToken(SHOWX, trimmedToken);
                 } else if (strcmp(currentToken, "execf") == 0) {
-                    Token * execfToken = initToken(EXECF, trimmedToken);
-                    tokenHolder[count++] = execfToken;
+                    currentTokenPtr = initToken(EXECF, trimmedToken);
                 } else if (strcmp(currentToken, "ma") == 0) {
-                    Token * maToken = initToken(MA, trimmedToken);
-                    tokenHolder[count++] = maToken;
+                    currentTokenPtr = initToken(MA, trimmedToken);
                 } else {
 					if ((int)trimmedToken[0] != 0) { // Sometimes it recognizes "" as a token; NOTE: It recognizes the NULL character, so we need to skip it
                         // Check for variable of a number
                         if (isNum(trimmedToken)) {
-                            Token * numberToken = initToken(VALUE, trimmedToken);
-                            tokenHolder[count++] = numberToken;
+                            currentTokenPtr = initToken(VALUE, trimmedToken);
                         } else {
-                            Token * variableToken = initToken(VARIABLE, trimmedToken);
-					        tokenHolder[count++] = variableToken;
+                            currentTokenPtr = initToken(VARIABLE, trimmedToken);
                         }
                     }
                 }
+
+                tokenHolder[count++] = currentTokenPtr;
                 state = 0;
             } else {
                 currentToken[tokenIndex++] = currentChar;
@@ -166,29 +163,29 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
 
             // Add conditions for '<' and '>'
             if (currentChar == ':') {
-                Token * colonToken = initToken(COLON, ":");
-                tokenHolder[count++] = colonToken;
+                currentTokenPtr = initToken(COLON, ":");
+                tokenHolder[count++] = currentTokenPtr;
             } else if (currentChar == ';') {
-                Token * semiColonToken = initToken(SEMI_COLON, ";");
-                tokenHolder[count++] = semiColonToken;
+                currentTokenPtr = initToken(SEMI_COLON, ";");
+                tokenHolder[count++] = currentTokenPtr;
             } else if (currentChar == '[') { // Braces
-                Token * openingSquareBracket = initToken(SQ_BRACES, "[");
-                tokenHolder[count++] = openingSquareBracket;
+                currentTokenPtr = initToken(SQ_BRACES, "[");
+                tokenHolder[count++] = currentTokenPtr;
             } else if (currentChar == ']') {
-                Token * closingSquareBracket = initToken(SQ_BRACES, "]");
-                tokenHolder[count++] = closingSquareBracket;
+                currentTokenPtr = initToken(SQ_BRACES, "]");
+                tokenHolder[count++] = currentTokenPtr;
             } else if (currentChar == '<') {
-                Token * openingTriangleBracket = initToken(TR_BRACES, "<");
-                tokenHolder[count++] = openingTriangleBracket;
+                currentTokenPtr = initToken(TR_BRACES, "<");
+                tokenHolder[count++] = currentTokenPtr;
             } else if (currentChar == '>') {
-                Token * closingTriangleBracket = initToken(TR_BRACES, ">");
-                tokenHolder[count++] = closingTriangleBracket;
+                currentTokenPtr = initToken(TR_BRACES, ">");
+                tokenHolder[count++] = currentTokenPtr;
             } else if (currentChar == '(') {
-                Token * openingRoundBracket = initToken(RD_BRACES, "(");
-                tokenHolder[count++] = openingRoundBracket;
+                currentTokenPtr = initToken(RD_BRACES, "(");
+                tokenHolder[count++] = currentTokenPtr;
             } else if (currentChar == ')') {
-                Token * closingRoundBracket = initToken(RD_BRACES, ")");
-                tokenHolder[count++] = closingRoundBracket;
+                currentTokenPtr = initToken(RD_BRACES, ")");
+                tokenHolder[count++] = currentTokenPtr;
             }
         }
 
@@ -204,6 +201,7 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
     }
 
     free(tokenHolder); // Free the original array
+    free(currentTokenPtr);
 
     return finalTokens;
 }
