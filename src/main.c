@@ -15,20 +15,15 @@ typedef struct {
     char * variable_name;
 } StackNode;
 
-StackNode * initStackNode(int _value, char * _variable_name);
-StackNode * RIC();
-
 typedef struct {
     StackNode * operations[MAX_SIZE];
     int top;
 } Stack;
 
-void initialize(Stack * stack);
-int isFull(Stack * stack);
-int isEmpty(Stack * stack);
-int push(Stack * stack, StackNode * value);
-StackNode * pop(Stack * stack);
-StackNode * peek(Stack * stack);
+typedef struct {
+    int type;
+    char * value;
+} Token;
 
 enum TokenType {
     ADDX = 1, // adds a variable
@@ -48,11 +43,15 @@ enum TokenType {
     SUBX = 15 // Subtraction of two numbers
 };
 
-// Stores the tokens of the program
-typedef struct {
-    int type;
-    char * value;
-} Token;
+StackNode * initStackNode(int _value, char * _variable_name);
+StackNode * RIC();
+
+void initialize(Stack * stack);
+int isFull(Stack * stack);
+int isEmpty(Stack * stack);
+int push(Stack * stack, StackNode * value);
+StackNode * pop(Stack * stack);
+StackNode * peek(Stack * stack);
 
 Token * initToken(int _type, char * _value);
 
