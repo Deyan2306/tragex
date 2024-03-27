@@ -151,8 +151,8 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
             if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r' || currentChar == '\t' || currentChar == ':' || currentChar == ';') {
                 // End of token
                 currentToken[tokenIndex] = '\0'; // Terminate the string
-
 				char * trimmedToken = trim(currentToken);
+
                 if (strcmp(currentToken, "addx") == 0) {
                     Token * addxToken = initToken(ADDX, trimmedToken);
                     tokenHolder[count++] = addxToken;
@@ -169,9 +169,11 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
                     Token * maToken = initToken(MA, trimmedToken);
                     tokenHolder[count++] = maToken;
                 } else {
-					Token * variableToken = initToken(VARIABLE, trimmedToken);
-					tokenHolder[count++] = variableToken;
-				}
+					if ((int)trimmedToken[0] != 0) { // Sometimes it recognizes "" as a token; NOTE: It recognizes the NULL character, so we need to skip it
+                        Token * variableToken = initToken(VARIABLE, trimmedToken);
+					    tokenHolder[count++] = variableToken;
+                    }
+                }
                 state = 0;
             } else {
                 currentToken[tokenIndex++] = currentChar;
