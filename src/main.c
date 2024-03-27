@@ -61,6 +61,7 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens);
 
 bool extensionIsNotCorrect(char * fileName, int size);
 char * trim(char * str);
+bool isNum(char * stringRepresentation);
 
 int main(int argc, char **argv) {
 
@@ -82,37 +83,7 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-char * trim(char * str) {
-	while (isspace((unsigned char)*str)) {
-		str++;
-	}
-
-	if (*str == '\0')
-		return str;
-
-	char *end = str + strlen(str) - 1;
-	while (end > str && isspace((unsigned char)*end)) {
-		end--;
-	}
-
-	*(end + 1) = '\0';
-
-	return str;
-}
-
-char * getTokenStringRepresentation(Token * token) {
-
-    char * result = malloc(sizeof(char) * (strlen(token->value) + 20)); // Adding extra for type
-
-    if (result == NULL) {
-        fprintf(stderr, "[-] Failed to allocate memory for the tokenization!\n");
-        exit(1);
-    }
-
-    sprintf(result, "(\"%s\" : %d)", token->value, token->type);
-
-    return result;
-}
+// ==== Lexer methods ====
 
 Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
 
@@ -170,8 +141,14 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
                     tokenHolder[count++] = maToken;
                 } else {
 					if ((int)trimmedToken[0] != 0) { // Sometimes it recognizes "" as a token; NOTE: It recognizes the NULL character, so we need to skip it
-                        Token * variableToken = initToken(VARIABLE, trimmedToken);
-					    tokenHolder[count++] = variableToken;
+                        // Check for variable of a number
+                        if (isNum(trimmedToken)) {
+                            Token * numberToken = initToken(VALUE, trimmedToken);
+                            tokenHolder[count++] = numberToken;
+                        } else {
+                            Token * variableToken = initToken(VARIABLE, trimmedToken);
+					        tokenHolder[count++] = variableToken;
+                        }
                     }
                 }
                 state = 0;
@@ -245,18 +222,18 @@ Token * initToken(int _type, char * _value) {
     return createdToken;
 }
 
-// ==== Main functions ====
-bool extensionIsNotCorrect(char * fileName, int size) {
-	char check[] = { 't', 'r', 'g', 'x' };
+char * getTokenStringRepresentation(Token * token) {
 
-	int i;
-	int j;
+    char * result = malloc(sizeof(char) * (strlen(token->value) + 20)); // Adding extra for type
 
-	for (i = 0, j = size - 4; j < size; i++, j++)
-		if (check[i] != fileName[j - 1])
-				return false;
+    if (result == NULL) {
+        fprintf(stderr, "[-] Failed to allocate memory for the tokenization!\n");
+        exit(1);
+    }
 
-	return true;
+    sprintf(result, "(\"%s\" : %d)", token->value, token->type);
+
+    return result;
 }
 
 // ==== Stack Node methods ====
@@ -331,4 +308,46 @@ StackNode * peek(Stack * stack) {
 	return peeked;
 }
 
-// TODO: free alocated space
+// ==== Main functions ====
+
+char * trim(char * str) {
+	while (isspace((unsigned char)*str)) {
+		str++;
+	}
+
+	if (*str == '\0')
+		return str;
+
+	char *end = str + strlen(str) - 1;
+	while (end > str && isspace((unsigned char)*end)) {
+		end--;
+	}
+
+	*(end + 1) = '\0';
+
+	return str;
+}
+
+bool extensionIsNotCorrect(char * fileName, int size) {
+	char check[] = { 't', 'r', 'g', 'x' };
+
+	int i;
+	int j;
+
+	for (i = 0, j = size - 4; j < size; i++, j++)
+		if (check[i] != fileName[j - 1])
+				return false;
+
+	return true;
+}
+
+bool isNum(char * stringRepresentation) {
+    int size = strlen(stringRepresentation);
+    for (int i = 0; i < size; i++)
+        if ((int) stringRepresentation[i] < 48 || (int) stringRepresentation[i] > 57)
+            if (i == 0 && stringRepresentation[i] == '-')
+                continue;
+            else
+                return false;
+    return true;
+}
