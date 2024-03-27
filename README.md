@@ -7,4 +7,4 @@ its called tragex, because its tragedy, and "x" sounds kinda cool
 For quick reference to the language, you could check the [`documentation`](/docs/index.md)
 
 ### License
-The project is under [`MIT LICENSE`](/LICENSE).
+The project is under [`Apache 2.0 LICENSE`](/LICENSE).
