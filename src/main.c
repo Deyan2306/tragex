@@ -119,7 +119,15 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
                 currentToken[tokenIndex++] = currentChar;
             }
         } else if (state == 1) { // Inside a token
-            if (currentChar == ' ' || currentChar == '\n' || currentChar == '\r' || currentChar == '\t' || currentChar == ':' || currentChar == ';') {
+            if (currentChar == ' ' || currentChar == '\0'
+                || currentChar == '\n'
+                || currentChar == '\r' 
+                || currentChar == '\t' 
+                || currentChar == ':' || currentChar == ';'
+                || currentChar == '[' || currentChar == ']'
+                || currentChar == '<' || currentChar == '>'
+                || currentChar == '(' || currentChar == ')') {
+
                 // End of token
                 currentToken[tokenIndex] = '\0'; // Terminate the string
 				char * trimmedToken = trim(currentToken);
@@ -155,6 +163,8 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
             } else {
                 currentToken[tokenIndex++] = currentChar;
             }
+
+            // BUG: Some tokens are recognized in the start of the sentance, so we get results like this "(test"
 
             // Add conditions for '<' and '>'
             if (currentChar == ':') {
