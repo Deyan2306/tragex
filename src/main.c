@@ -108,7 +108,6 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
     int tokenIndex = 0;
 	char currentChar;
 
-	// TODO: Check if the current token is a number
     while((currentChar = fgetc(fptr)) != EOF) {
         if (state == 0) { // Outside token
             if (currentChar == ' ') {
