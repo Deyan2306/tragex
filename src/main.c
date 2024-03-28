@@ -127,10 +127,26 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
                 || currentChar == '[' || currentChar == ']'
                 || currentChar == '<' || currentChar == '>'
                 || currentChar == '(' || currentChar == ')') {
-
+                
                 // End of token
                 currentToken[tokenIndex] = '\0'; // Terminate the string
 				char * trimmedToken = trim(currentToken);
+
+                if (trimmedToken[0] == '(') {
+                    currentTokenPtr = initToken(RD_BRACES, "(");
+                    tokenHolder[count++] = currentTokenPtr;
+                    trimmedToken++; // Moves the pointer 1 bit ahead, so we cover the braces
+                } else if (trimmedToken[0] == '<') {
+                    currentTokenPtr = initToken(TR_BRACES, "<");
+                    tokenHolder[count++] = currentTokenPtr;
+                    trimmedToken++;
+                } else if (trimmedToken[0] == '[') {
+                    currentTokenPtr = initToken(SQ_BRACES, "[");
+                    tokenHolder[count++] = currentTokenPtr;
+                    trimmedToken++;
+                }
+
+                // XXX
 
                 if (strcmp(currentToken, "addx") == 0) {
                     currentTokenPtr = initToken(ADDX, trimmedToken);
