@@ -8,7 +8,16 @@
 #define MAX_TOKEN_SIZE 1024
 const int BUFF = 100;
 
-// Note from the author: remember to free() any space after using push or initStackNode :]
+/*
+We encountered a rock bottom...
+the lexor is written badly, which makes it not extendable at all. This kind of sucks, really.
+So how do we fix this?
+    1. I should replace all string checks, that use `==` with strcmp (the actual way of comparing strings).
+    2. I should probably rewrite the whole tokenizing function - it shouldn't take as long, i mean, i have already written it
+    3. I should probably extract the tokenizing function into a separate one, so the file-reading works
+
+Good luck with that.
+*/
 
 typedef struct {
     int value;
@@ -62,10 +71,20 @@ bool extensionIsNotCorrect(char * fileName, int size);
 char * trim(char * str);
 bool isNum(char * stringRepresentation);
 
+void runInterpreted();
+
 int main(int argc, char **argv) {
+
+    // TODO: Make a command line interpreter, that tokenizes
+    // WAGAHAAAAAA: use strcmp to compare strings and it may work
 
     if (argc != 2) {
         fprintf(stderr, "Usage: tragex <filename.trgx> -[options]\n");
+        return 1;
+    }
+
+    if (strcmp(argv[1], "-i") == 0) {
+        runInterpreted();  
         return 1;
     }
 
@@ -80,6 +99,29 @@ int main(int argc, char **argv) {
 
     free(tokens);
     return 0;
+}
+
+void runInterpreted() {
+    char * command;
+    printf("> ");
+    scanf("%s", command);
+    while (strcmp(command, "exit") != 0) {
+
+        int numberOfTokens = 0;
+        Token * tokens = tokenizeProgram(command, strlen(command), &numberOfTokens);
+
+        for (int i = 0; i < numberOfTokens; i++)
+            printf("%s\n", getTokenStringRepresentation(&tokens[i])); // TODO: Thi tokenizes a whole file, not just a string...
+
+        for (int i = 0; i < numberOfTokens; i++)
+            free(tokens[i].value);
+
+        free(tokens);
+        
+        printf("> ");
+        scanf("%s", command); 
+    }
+    return;
 }
 
 // ==== Lexer methods ====
@@ -109,6 +151,7 @@ Token * tokenizeProgram(char * fileLocation, int size, int * numberOfTokens) {
 
     Token * currentTokenPtr = NULL;
 
+    // TODO: extract this to a function
     while((currentChar = fgetc(fptr)) != EOF) {
         if (state == 0) { // Outside token
             if (currentChar == ' ') {
